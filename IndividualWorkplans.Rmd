@@ -1,0 +1,218 @@
+---
+title: "2017 BAM Workplan"
+author: "Individualized Workplan for Nicole Barker"
+output:
+  word_document:
+    reference_docx: ../styles/IndividualizedWorkplans.docx
+---
+
+``` {r setup, echo=F, message=F, warning=F}
+require(knitr)
+opts_knit$set(root.dir = '..')
+```
+
+``` {r startup, echo=F, warning=F, message=F}
+rm(list=ls())
+require(ProjectTemplate)
+load.project()
+```
+
+``` {r, echo=F}
+# Who's workplan?
+tm <- "Nicole Barker"
+fn <- strsplit(tm, " ", fixed=T)[[1]][1]
+```
+
+``` {r task.time.allocation, echo=F, eval=T}
+# Types of task and time allocations, in relation to team member
+if (fn %in% colnames(tcd)) {
+  tcd$Description <- paste(tcd$Name, tcd$Descript1, fn, tcd$Descript2, " For the next 6-8 months, it's suggested that ", fn, " spend ", tcd[[fn]], " days per week on these tasks.", sep="")
+} else {
+  tcd$Description <- paste(tcd$Name, tcd$Descript1, fn, tcd$Descript2, sep="")
+}
+```
+# `r paste(tm, "'s Workplan", sep="")`
+
+**Last updated: `r format(Sys.Date(), "%B %e, %Y")`**
+
+This document summarizes all projects that `r fn` is contributing to. They fall into one of the following categories. 
+
+``` {r create.taskcat.list, echo=F, eval=T}
+if (fn == "Nicole") {
+  bullets <- paste("* `r tcd$Description[2]`",
+    "* `r tcd$Description[3]`",
+    "* `r tcd$Description[5]`",
+    "* `r paste(tcd$Name[4], tcd$Descript1[4], fn, tcd$Descript2[4], sep='')`",
+    "* `r paste(tcd$Name[7], tcd$Descript1[7], sep='')`",
+    sep="\n")
+} else {
+   bullets <- paste(
+     "* `r tcd$Description[1]`",  
+     "* `r tcd$Description[3]`", 
+     "* `r paste(tcd$Name[4], tcd$Descript1[3], fn, tcd$Descript2[3], sep='')`",
+     "* `r paste(tcd$Name[7], tcd$Descript1[7], sep='')`", 
+     sep="\n")
+}
+```
+
+`r knit(text=bullets)`
+
+For details on how to read the workplan, skip to the end of the document. 
+
+``` {r format.team.grants, echo=F, eval=T}
+bamteam$Name <- paste(bamteam$FirstName, bamteam$LastName)
+allbamgrants <- bamgrants
+bamgrants <- bamgrants[bamgrants$GrantStatus %in% c("Active"),]
+```
+
+``` {r calculate.urgency, echo=F, eval=T}
+lookup.urgency$DateCuts <- as.Date(as.character(lookup.urgency$DateCuts), "%m/%d/%Y")
+lookup.urgency$DateCuts[is.na(lookup.urgency$DateCuts)] <- Sys.Date()
+lookup.urgency$MonthsLeft <- NA
+lookup.urgency[1:(nrow(lookup.urgency)-1),]$MonthsLeft <- round((lookup.urgency$DateCuts - Sys.Date())/(365.25/12), 1)[2:nrow(lookup.urgency)]
+
+projs$ProjUrgency <- cut(projs$Proj.Deadline, breaks=lookup.urgency$DateCuts, labels=lookup.urgency$ProjUrgency[1:(nrow(lookup.urgency)-1)])
+
+lookup.urgency <- lookup.urgency[order(lookup.urgency$Order),]
+
+# Change NAs to "unknown"; requires creation of new factor level first
+projs$ProjUrgency <- factor(projs$ProjUrgency, levels=c(levels(projs$ProjUrgency), "Unknown", "Needs approval"))
+projs$ProjUrgency[is.na(projs$ProjUrgency)] <- "Unknown"
+projs$ProjUrgency[projs$Project.Status == "IDEA"] <- "Needs approval"
+
+# add estimated amoung of time left, in months
+projs <- merge(projs, lookup.urgency[c("ProjUrgency", "MonthsLeft")], by="ProjUrgency", all.x=T)
+
+# task urgency
+projs$TaskUrgency <- cut(projs$Task.Deadline, breaks=lookup.urgency$DateCuts, labels=lookup.urgency$TaskUrgency[1:(nrow(lookup.urgency)-1)])
+
+# Change NAs to "unknown"; requires creation of new factor level first
+projs$TaskUrgency <- factor(projs$TaskUrgency, levels=c(levels(projs$TaskUrgency), "Unknown", "Needs approval"))
+projs$TaskUrgency[is.na(projs$TaskUrgency)] <- "Unknown"
+projs$TaskUrgency[projs$Project.Status == "IDEA"] <- "Needs approval"
+```
+
+``` {r determine.extraEC.funding, echo=F, eval=T}
+ExtraECFunding <- data.frame(Grants=projs$Grants, ExtraECFunding=rep("No", times=length(projs$Grants)))
+ExtraECFunding$ExtraECFunding <- factor(ExtraECFunding$ExtraECFunding, levels=c("YES-current", "Yes-past", "Awaiting", "No"))
+
+# Grants that aren't EC grants
+allbamgrants$ActiveNonEC <- allbamgrants$GrantName != "EC 2014-17" & allbamgrants$GrantStatus == "Active"
+allbamgrants$PastNonEC <- allbamgrants$GrantName != "EC 2014-17" & allbamgrants$GrantStatus == "Finished"
+allbamgrants$ProposedNonEC <- allbamgrants$GrantName != "EC 2014-17" & allbamgrants$GrantStatus == "Proposed"
+
+unknowngrants <- allbamgrants$GrantName[allbamgrants$ProposedNonEC == T]
+for (i in 1:length(unknowngrants)) {
+  ExtraECFunding$ExtraECFunding[grep(unknowngrants[i], ExtraECFunding$Grants)] <- "Awaiting"  
+}
+
+pastnonECgrants <- allbamgrants$GrantName[allbamgrants$PastNonEC ==T]
+for (i in 1:length(pastnonECgrants)) {
+  ExtraECFunding$ExtraECFunding[grep(pastnonECgrants[i], ExtraECFunding$Grants)] <- "Yes-past"  
+}
+
+nonECgrants <- allbamgrants$GrantName[allbamgrants$ActiveNonEC == T]
+for (i in 1:length(nonECgrants)) {
+  ExtraECFunding$ExtraECFunding[grep(nonECgrants[i], ExtraECFunding$Grants)] <- "YES-current"  
+}
+
+projs$ExtraECFundingCalc <- ExtraECFunding$ExtraECFunding
+```
+
+``` {r subset.active.proj, echo=F, warning=F, results='asis', eval=T}
+allproj <- projs[projs$Project.Status %in% c("ACTIVE", "QUEUED", "IDEA", "STALLED", "PENDING"),]
+allproj$Project <- as.character(allproj$Project)
+allproj$SubTheme <- as.character(allproj$SubTheme)
+allproj$Theme <- as.character(allproj$Theme)
+allproj <- allproj[!is.na(allproj$Project),]
+allproj <- allproj[allproj$Project != "",]
+```
+
+``` {r calculate.time.left, echo=F, eval=T}
+allproj$dayslefttot <- as.numeric(allproj$Task.Deadline - Sys.Date())
+
+daycorrect <- tcd[c("TaskCategory", fn)]
+daycorrect$Correction <- as.numeric(tcd[[fn]]) / 7
+
+allproj$TaskCategory[is.na(allproj$TaskCategory)] <- "Unspecified"
+
+allproj <- do.call(rbind, lapply(unique(allproj$TaskCategory), function(i) {
+  x <- allproj[allproj$TaskCategory == i,]
+  x$WorkingDaysLeft <- round(x$dayslefttot * daycorrect[daycorrect$TaskCategory == i,]$Correction, 1)
+  x
+  }))
+```
+
+``` {r set.levels, echo=F, eval=T}
+allproj$SubTheme <- factor(allproj$SubTheme, levels=unique(subthemes$SubTheme)[order(subthemes$SubTh.Priority)])
+
+allproj$Domain <- factor(allproj$Domain, levels=levels(allproj$Domain)[c(5,4,3,2,1)])
+
+allproj$Lead <- factor(allproj$Lead)
+allproj$Lead <- factor(allproj$Lead, levels=sort(levels(allproj$Lead)))
+allproj$Lead <- factor(allproj$Lead, levels = c("Trish Fontaine", "Peter Solymos", "Diana Stralberg", "Nicole Barker", "Lionel Leston", "Alberto Suarez-Esteban", "Future post-doc (pending)", "Tara Stehelin", "Steve Matsuoka", "Alana Westwood", "Samuel Hache", "Judith Toms", "Lisa Mahon", "Steve Van Wilgenburg", "Erin Bayne", "Fiona Schmiegelow", "Steve Cumming", "Unassigned", "Externally led", "Multiple leads"))
+```
+
+
+``` {r clean.columns, echo=F, eval=T}
+allproj$Task <- paste(allproj$Milestone, "for", allproj$Project)
+colnames(allproj)[which(colnames(allproj) == "Lead")] <- "ProjLead"
+colnames(allproj)[which(colnames(allproj) == "AssignedTo")] <- "Responsible"
+
+allproj$DaysRequired <- paste(allproj$NumDaysLL, "-", allproj$NumDaysUL, sep=" ")
+allproj2 <- allproj[c("Task", "Responsible", "Task.Deadline", "dayslefttot", "WorkingDaysLeft", "NumDaysLL", "NumDaysUL", "DaysRequired", "Priority", "ProjLead", "Proj.Deadline", "Collaborators", "TaskStatus", "TaskCategory", "Project", "Milestone", "TaskUrgency", "Comments", "Project")]
+```
+
+``` {r replace.task.duedates.with.proj.deadlines.where.absent, echo=F, eval=T}
+allproj2$Task.Deadline[is.na(allproj2$Task.Deadline)] <- allproj2$Project.Deadline[is.na(allproj2$Task.Deadline)]
+```
+
+``` {r remove.completed.tasks, echo=F, eval=T}
+allproj2 <- allproj2[allproj2$TaskStatus != "COMPLETED",]
+```
+
+``` {r create.teammember.datasets, echo=F, eval=T}
+proj.TM <- lapply(levels(allproj2$ProjLead), function(i) {
+  leads <- allproj2[allproj2$ProjLead == i,] #projects led by the lead in question
+  supporting <- allproj2[grep(i, allproj2$Collaborators),] #projects where the person is listed as a collaborator
+  tasks <- allproj2[allproj2$Responsible == strsplit(i, " ")[[1]][2],]
+  x <- rbind(leads, tasks, supporting)
+  x <- x[!duplicated(x),]
+  x <- x[x$Responsible == strsplit(i, " ")[[1]][2],]
+  x <- x[order(x$Task.Deadline, x$Priority),]
+  x <- x[-which(colnames(x) %in% c("Responsible", "Collaborators"))]
+})
+names(proj.TM) <- levels(allproj2$ProjLead)
+TM.lvls <- 1:length(names(proj.TM))
+```
+
+``` {r create.taskcategory.datasets, echo=F, eval=T}
+onetm <- proj.TM[[tm]]
+onetm <- onetm[!is.na(onetm$Task),]
+tcd2 <- tcd[tcd$TaskCategory %in% unique(onetm$TaskCategory), c("TaskCategory", "Order", "Name")]
+tcd2 <- tcd2[order(tcd2$Order),]
+onetm$TaskCategory <- factor(onetm$TaskCategory, levels=c(tcd2$TaskCategory, "Needs Approval"))
+onetm$TaskCategory[onetm$TaskUrgency == "Needs approval"] <- "Needs Approval"
+onetm$TaskCategory <- factor(onetm$TaskCategory)
+proj.tc <- split(onetm, onetm$TaskCategory)
+names(proj.tc) <- c(as.character(tcd2$Name), "Needs Approval")[1:length(proj.tc)]
+tc.lvls <- 1:length(names(proj.tc))
+```
+
+``` {r, echo=F, eval=T}
+src <- lapply(tc.lvls, function(tc.num) {
+  knit_expand("scripts/IndividualWorkplansLvl2.Rmd")
+  })
+```
+
+`r knit(text = unlist(src))`
+
+### How to read the workplan
+
+* **Task**: A tangible step, task, or milestone for a project. It has a definite end point, even within ongoing projects. 
+* **TaskDeadline**: Either suggested through conversation with `r fn` or selected by Nicole so that all priority projects could be finished within the next 6-8 months. These can be renegotiated if they don't seem reasonable, or if the DaysRequired exceeds the calculated DaysAvailable.  A NA indicates that a deadline hasn't been specified by the project lead. 
+* **WorkingDaysLeft**: The deadline minus today's date, adjusted by how many days per week are spent on tasks in that category. This is how much of `r fn`'s time would be available before the deadline, if no time was commited to any other tasks. 
+* **DaysAvail**: The actual number of working days available, after removing all days committed to other tasks. (WorkingDaysLeft - DaysRequired). A range because the number of days a task could take is presented as a range.  Negative numbers indicate that the tasks up until that one are expected to take more of `r fn`'s time than is available before the given deadline. 
+* **DaysRequired**: How long the task is expected to take, in days. Presented as a range. If this exceeds DaysAvail for a given task, a deadline may need to be adjusted. Or the estimated Time Required should be reevaluated. A NA indicates that `r fn` hasn't specified how long the task is expected to take. 
+* **ProjLead**: The lead of the project (not necessarily the person responsible for this task)
+* **TaskStatus**: Where this task stands. 

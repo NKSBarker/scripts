@@ -1,0 +1,54 @@
+
+``` {r subsetTaskCat{{tc.num}}, results='asis', echo=F}
+oneTaskCat <- names(proj.tc)[{{tc.num}}]
+oneTaskCatset <- proj.tc[[oneTaskCat]]
+```
+
+``` {r fix.headingTaskCat{{tc.num}}, echo=F}
+myhead <- oneTaskCat
+if (oneTaskCat == "Needs Approval") {
+  mysubhead <- "These tasks or their parent projects require evaluation by the StCo"
+} else {
+  mysubhead <- tcd$Subheading[tcd$Name == oneTaskCat]
+}
+
+```
+
+## `r myhead`
+`r mysubhead`
+
+
+``` {r adjust.time.left.based.on.time.spent.earlier.tc{{tc.num}}, echo=F}
+oneTaskCatset$NumDaysLLNoNA <- oneTaskCatset$NumDaysLL
+oneTaskCatset$NumDaysLLNoNA[is.na(oneTaskCatset$NumDaysLLNoNA)] <- 0
+oneTaskCatset$CumDaysLL <- cumsum(as.numeric(oneTaskCatset$NumDaysLLNoNA))
+oneTaskCatset$NumDaysULNoNA <- oneTaskCatset$NumDaysUL
+oneTaskCatset$NumDaysULNoNA[is.na(oneTaskCatset$NumDaysULNoNA)] <- 0
+oneTaskCatset$CumDaysUL <- cumsum(as.numeric(oneTaskCatset$NumDaysULNoNA))
+
+oneTaskCatset$DaysAvailLL <- as.numeric(oneTaskCatset$WorkingDaysLeft)
+oneTaskCatset$DaysAvailUL <- as.numeric(oneTaskCatset$WorkingDaysLeft)
+
+if (nrow(oneTaskCatset) > 1) {
+  for(i in 2:nrow(oneTaskCatset)) {
+    oneTaskCatset[i,]$DaysAvailLL <- round(oneTaskCatset[i,]$WorkingDaysLeft - oneTaskCatset[i-1,]$CumDaysLL, 1)
+    oneTaskCatset[i,]$DaysAvailUL <- round(oneTaskCatset[i,]$WorkingDaysLeft - oneTaskCatset[i-1,]$CumDaysUL, 1)
+  }
+} 
+
+oneTaskCatset$DaysAvail <- paste(oneTaskCatset$DaysAvailUL, "-", oneTaskCatset$DaysAvailLL)
+```
+
+``` {r print.tasks.Taskcat{{tc.num}}, echo=F}
+if (oneTaskCat == "Ideas for the Future") {
+  prj <- oneTaskCatset[c("Project", "ProjLead", "TaskStatus")]
+} else {
+  if (oneTaskCat == "Pending Tasks") {
+    prj <- oneTaskCatset[c("Task", "DaysRequired",  "ProjLead", "TaskStatus", "Comments")]
+  } else {
+    prj <- oneTaskCatset[c("Task", "Task.Deadline", "WorkingDaysLeft", "DaysAvail", "DaysRequired",  "ProjLead", "TaskStatus")]  
+  }
+}
+
+kable(prj, row.names=F)
+```

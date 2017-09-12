@@ -1,0 +1,32 @@
+
+``` {r subset{{proj.num}}, results='asis', echo=F}
+oneprojname <- names(proj.l)[{{proj.num}}]
+oneproj <- proj.l[[oneprojname]]
+```
+
+``` {r varinfo{{proj.num}}, echo=F}
+projname <- unique(oneproj$ProjectName)
+themeclus <- unique(oneproj$ThemeCluster)
+purpose <- unique(oneproj$Purpose)
+```
+
+### `r projname`; (`r themeclus`)
+
+**Project Purpose:** `r purpose`
+
+``` {r projtab{{proj.num}}, echo=F}
+projtab <- data.frame(ProjectLead=oneproj$Project.Lead, Funding=oneproj$Funding, Deliverables=paste(unique(oneproj$Target), collapse=", "), Priority=oneproj$Priority, Urgency=oneproj$ProjUrgency, ProgressExpected=oneproj$ProjDue, Status=oneproj$ProjStatus)#, Comments=oneproj$Comments)
+
+projtab <- projtab[!duplicated(projtab),]
+```
+
+`r kable(projtab, row.names=F)`
+
+##### Tasks
+``` {r tasktab{{proj.num}}, echo=F}
+tasktab <- data.frame(Task=oneproj$Task, Target=oneproj$TaskOutcome, Responsible=oneproj$Responsible, Due=oneproj$Due, TaskStatus=oneproj$Status)
+
+tasktab <- tasktab[!duplicated(tasktab),]
+```
+
+`r kable(tasktab, row.names=F)`

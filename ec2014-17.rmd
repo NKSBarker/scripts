@@ -1,0 +1,85 @@
+---
+title: "eccc 2014-17 projects"
+output:
+  word_document:
+    reference_docx: ../styles/GrantSummary.docx
+---
+**Last updated: `r format(Sys.Date(), "%B %e, %Y")`**
+
+``` {r setup, echo=F, message=F, warning=F}
+require(knitr)
+opts_knit$set(root.dir = '..')
+```
+
+``` {r startup, echo=F, warning=F, message=F}
+rm(list=ls())
+require(ProjectTemplate)
+load.project()
+```
+
+###### Projects with ECCC 2014-17 listed on PROJECTs page
+``` {r, echo=T}
+ecprojs <- data.frame(PROJECT=projs$Project[grep("ECCC 2014-17", projs$Grants)], PROJECTpage="yes")
+```
+
+###### Projects assigned to an ECCC 2014-17 grant statement on GRANT INFO page
+``` {r, echo=T}
+promprojs <- data.frame(PROJECT=bamGrantInfo$Project[bamGrantInfo$Grant %in% "ECCC 2014-17"], GRANTINFOpage="yes")
+```
+
+###### Table of both
+``` {r echo=F}
+myprojs <- merge(ecprojs, promprojs, by="PROJECT", all=T)
+myprojs <- myprojs[!duplicated(myprojs),]
+```
+
+`r kable(myprojs)`
+
+
+# ECCC 2014-17 grant "promises"
+``` {r echo=F}
+ecproms <- bamGrantInfo[bamGrantInfo$Grant %in% "ECCC 2014-17",]
+ecproms$Heading.Lvl1 <- factor(ecproms$Heading.Lvl1)
+ecpromss <- split(ecproms, ecproms$Heading.Lvl1.Order)
+
+biglist <- lapply(ecpromss, function(x) {
+  y <- x[order(x$Heading.Lvl2.Order),]
+  data.frame(Project=y$Project, WorkplanText=y$GrantStatement, Deliverable=y$promisedDeliverable, Status=" ", Explanation=" ")
+})
+```
+
+# `r unique(ecpromss[[1]]$Heading.Lvl1)`
+
+`r kable(biglist[1], row.names=F)`
+
+
+# `r unique(ecpromss[[2]]$Heading.Lvl1)`
+
+`r kable(biglist[2], row.names=F)`
+
+# `r unique(ecpromss[[3]]$Heading.Lvl1)`
+
+`r kable(biglist[3], row.names=F)`
+
+# `r unique(ecpromss[[4]]$Heading.Lvl1)`
+
+`r kable(biglist[4], row.names=F)`
+
+# `r unique(ecpromss[[5]]$Heading.Lvl1)`
+
+`r kable(biglist[5], row.names=F)`
+
+# `r unique(ecpromss[[6]]$Heading.Lvl1)`
+
+`r kable(biglist[6], row.names=F)`
+
+# `r unique(ecpromss[[7]]$Heading.Lvl1)`
+
+`r kable(biglist[7], row.names=F)`
+
+
+
+
+
+
+

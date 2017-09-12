@@ -1,0 +1,151 @@
+---
+title: "Boreal Avian Modelling Project Work Plan"
+author: "SAR Critical Habitat Identification (SAR-CH ID)"
+date: "February 2017 - March 2019"
+output:
+  word_document:
+    reference_docx: ../styles/SAR-CHWorkplan.docx
+---
+
+**Last updated: `r format(Sys.Date(), "%B %e, %Y")`**
+
+## Purpose of this document
+
+This document summarizes all activities proposed as part of BAM's SAR-CH work. It reflects activities:
+
+* outlined in the proposed workplans for BAM's 2014-17 ECCC Contribution Agreement
+* outlined in the proposed workplans for BAM's 2016-19 ECCC Contribution Agreement 
+* identified through additional discussion within the BAM team or with ECCC staff
+* proposed in answer to gaps identified in the schedule of studies
+
+
+``` {r setup, echo=F, message=F, warning=F}
+require(knitr)
+opts_knit$set(root.dir = '..')
+```
+
+``` {r startup, echo=F, warning=F, message=F}
+rm(list=ls())
+require(ProjectTemplate)
+load.project()
+```
+
+# Proposed Activities and Links to Schedule of Studies
+
+``` {r, echo=F}
+projs.sm <- projs[c("Milestone", "Project", "Lead", "Team.Initials", "TaskStatus", "Proj.Deadline", "AssignedTo", "AssignedToFirstname", "Task.Deadline")]
+colnames(projs.sm)[1] <- "Task"
+
+projs.sm$AssignedTo <- paste(projs.sm$AssignedToFirstname, projs.sm$AssignedTo, sep=" ")
+
+sumtab <- merge(Workplanning.SAR.CH, projs.sm, by="Task", all.x=T)
+projlevs <- data.frame(Project=sumtab$Proj_Clean, Order=sumtab$Order_ProjClean)
+sumtab <- sumtab[order(sumtab$Order_ProjClean, sumtab$Order_Ta),]
+
+sumtab <- data.frame(Project=as.character(sumtab$Proj_Clean), Task=sumtab$Task, SoS.Link=as.character(sumtab$SoS_RS), DetailedRationale=sumtab$Rationale, Responsible=sumtab$AssignedTo, Timeline=sumtab$Task.Deadline, TaskStatus=sumtab$TaskStatus, Notes=sumtab$Notes, Purpose=sumtab$Purpose_proj)
+
+sumtab$Timeline <- as.character(sumtab$Timeline)
+sumtab$Timeline[is.na(sumtab$Timeline)] <- ""
+sumtab <- sumtab[sumtab$Project != "",]
+
+sumtab$Project <- as.character(sumtab$Project)
+```
+
+``` {r fix.proj.order1, echo=F}
+#Orders as indicated by project and task order indicators in SAR-ch workplan table
+projlevs <- projlevs[!duplicated(projlevs$Project),]
+projlevs <- projlevs[order(projlevs$Order),]
+
+sumtab$Project <- factor(sumtab$Project, levels=projlevs$Project)
+```
+
+``` {r split.by.projclean, echo=F}
+sumtabs <- split(sumtab, sumtab$Project)
+sumtabs <- sumtabs[-which(names(sumtabs) == "")]
+```
+
+``` {r create.proj.datasets1, echo=F, eval=T}
+proj.lvls <- 1:length(names(sumtabs))
+```
+
+``` {r, echo=F, eval=T}
+src1 <- lapply(proj.lvls, function(proj.num) {
+  knit_expand("scripts/SAR-CHWorkplan.lvl2.1.Rmd")
+  })
+```
+
+Activities are roughly in the order they should be done, which aligns somewhat with the Schedule of Studies. Additional details follow this list of major activities:
+
+`r knit(text=paste("* ", paste(names(sumtabs), collapse=" \n * "), sep=""))`
+
+
+
+`r knit(text = unlist(src1))`
+
+
+``` {r create.master.table, echo=F}
+# Subset projects table for those Projects listed in the SAR-ch workplan table
+sarproj <- projs[projs$Project %in% Workplanning.SAR.CH$Project,]
+
+# Subset Projects table for key columns
+sarproj <- sarproj[c("Project", "Project.Objective", "Lead", "Proj.Deadline", "Project.Status")]
+sarproj$Proj.Deadline <- as.character(sarproj$Proj.Deadline)
+sarproj$Proj.Deadline[is.na(sarproj$Proj.Deadline)] <- ""
+
+#Take grant statements from grants table for projects listed in SAR workplan table
+sarproj2 <- merge(sarproj, bamGrantInfo, by="Project", all.x=T)
+
+#Take tasks for each project in the SAR-CH workplan table
+sartask <- projs[projs$Milestone %in% Workplanning.SAR.CH$Task,]
+sartask <- sartask[c("Milestone", "Task.Deadline", "AssignedToFirstname", "AssignedTo", "Project")]
+colnames(sartask)[1] <- "Task"
+
+# create master table of all projs and tasks
+sarproj2$Project <- as.character(sarproj2$Project)
+Workplanning.SAR.CH$Project <- as.character(Workplanning.SAR.CH$Project)
+master <- merge(sarproj2, Workplanning.SAR.CH, by="Project", all=T)
+
+write.table(master, "TmpCHworkplan.csv", sep=",", row.names = F, col.names = T)
+#kable(master, row.names=F)
+```
+
+``` {r fix.proj.order, echo=F}
+#Orders as indicated by project and task order indicators in SAR-ch workplan table
+master <- master[master$Project != "",]
+
+projlevs <- data.frame(Project=master$Project, Order=master$Order_Pr)
+projlevs <- projlevs[!duplicated(projlevs$Project),]
+projlevs <- projlevs[order(projlevs$Order),]
+
+master$Project <- factor(master$Project, levels=projlevs$Project)
+```
+
+``` {r split.by.project, echo=F}
+masters <- split(master, master$Project)
+```
+
+``` {r create.proj.datasets, echo=F, eval=T}
+proj.lvls <- 1:length(names(masters))
+```
+
+``` {r, echo=F, eval=T}
+src <- lapply(proj.lvls, function(proj.num) {
+  knit_expand("scripts/SAR-CHWorkplan.lvl2.Rmd")
+  })
+```
+
+
+``` {r eval=F, echo=F}
+# Section 2. Rationale for each of the proposed activities
+
+`r kable(sumtab[c("Task", "Rationale", "SoS.Link")])`
+
+
+# Section 3. Detailed Project Descriptions
+
+`r knit(text = unlist(src))`
+```
+
+## Schedule of Studies
+
+`r kable(SoS, row.names=F)`

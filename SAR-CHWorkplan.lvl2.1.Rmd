@@ -1,0 +1,31 @@
+
+``` {r subset{{proj.num}}, results='asis', echo=F}
+oneprojname <- names(sumtabs)[{{proj.num}}]
+oneproj <- sumtabs[[oneprojname]]
+```
+
+``` {r varinfo{{proj.num}}, echo=F}
+oneproj <- oneproj[oneproj$Project != "",]
+projname <- unique(oneproj$Project)
+
+purpose <- unique(oneproj$Purpose)
+purpose <- purpose[purpose != ""]
+
+
+tabcln <- oneproj[c("Task", "SoS.Link", "DetailedRationale", "Responsible", "Timeline", "Notes")]
+if ((0 %in% as.numeric(unique(tabcln$DetailedRationale) == ""))) {
+  tabcln <- tabcln  
+} else {
+  tabcln <- tabcln[-which(colnames(tabcln) == "DetailedRationale")]  
+}
+
+```
+
+### `r projname`
+
+**Purpose**: `r purpose`
+
+`r kable(tabcln, row.names=F)`
+
+<br>
+<br>

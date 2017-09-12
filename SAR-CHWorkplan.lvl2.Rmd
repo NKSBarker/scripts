@@ -1,0 +1,46 @@
+
+``` {r subset{{proj.num}}, results='asis', echo=F}
+oneprojname <- names(masters)[{{proj.num}}]
+oneproj <- masters[[oneprojname]]
+```
+
+``` {r varinfo{{proj.num}}, echo=F}
+projname <- unique(oneproj$Project)
+
+obj <- unique(oneproj$Project.Objective)
+
+stat <- unique(oneproj$Project.Status)
+
+grstatements <- oneproj[c("Grant", "GrantStatement")]
+colnames(grstatements)[2] <- "GrantText"
+grstatements <- grstatements[!duplicated(grstatements),]
+
+tasks <- merge(oneproj["Project"], sartask, by="Project", all.x=T)
+tasks <- merge(tasks, Workplanning.SAR.CH[c("Task", "Order_Ta")], by="Task", all.x=T)
+tasks <- tasks[!duplicated(tasks),]
+tasks <- tasks[order(tasks$Order_Ta),]
+
+tasks$AssignedTo <- paste(tasks$AssignedToFirstname, tasks$AssignedTo, sep=" ")
+tasks <- tasks[c("Task", "AssignedTo", "Task.Deadline")]
+tasks$Task.Deadline <- as.character(tasks$Task.Deadline)
+tasks$Task.Deadline[is.na(tasks$Task.Deadline)] <- ""
+```
+
+### `r projname`
+
+**Project Objective:**  `r obj`
+
+**Project Status:**  `r stat`
+
+**Promises made in various grants:**
+
+`r if(is.na(unique(grstatements$Grant))){paste("No associated grant promises")} else {kable(grstatements, row.names=F)}`
+
+<br>
+
+**Outstanding tasks:**
+
+`r if(is.na(unique(tasks$Task))){paste("No outstanding or outlined tasks")} else {kable(tasks, row.names=F)}`
+
+<br>
+<br>

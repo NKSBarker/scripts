@@ -1,0 +1,160 @@
+---
+title: "Boreal Avian Modelling Project Work Plan"
+author: "Status Update mid-February 2017"
+output:
+  word_document:
+    reference_docx: ../styles/SAR-CHWorkplan.docx
+---
+
+**Last updated: `r format(Sys.Date(), "%B %e, %Y")`**
+
+## Purpose of this document
+
+Summarize status of important projects and their tasks
+
+``` {r setup, echo=F, message=F, warning=F}
+require(knitr)
+opts_knit$set(root.dir = '..')
+```
+
+``` {r startup, echo=F, warning=F, message=F}
+rm(list=ls())
+require(ProjectTemplate)
+load.project()
+```
+
+``` {r, echo=F}
+projs.sm <- data.frame(ProjectName=projs$Project, ThemeCluster=paste(projs$Theme, projs$SubTheme, sep=" - "), Purpose=projs$Project.Objective, Project.Lead=projs$Lead, Funding=projs$Grants, Target=projs$TargetType, Priority=projs$PriorityClass.Project, ProjUrgency=projs$Progress.Urgency, ProjDue=projs$ProgressBy, ProjStatus=projs$Project.Status, Comments=projs$statusDETAILS, Task=projs$Milestone, TaskOutcome=projs$MilestoneType, Responsible=paste(projs$AssignedToFirstname, projs$AssignedTo, sep=" "), Due=projs$Task.Deadline, Status=projs$TaskStatus)
+```
+
+``` {r projs.subset.0, echo=F}
+statuswant0 <- c("ACTIVE", "QUEUED", "STALLED", "IDEA")
+priwant0 <- c("Top priority")
+urgencywant0 <- c("Overdue")
+
+projs.want0 <- projs.sm[projs.sm$ProjStatus %in% statuswant0 & projs.sm$Priority %in% priwant0 & projs.sm$ProjUrgency %in% urgencywant0,]
+projs.want0$ProjectName <- factor(projs.want0$ProjectName)
+```
+
+
+``` {r split.by.project.want0, echo=F}
+proj.l <- split(projs.want0, projs.want0$ProjectName)
+```
+
+``` {r create.proj.datasets0, echo=F, eval=T}
+proj.lvls <- 1:length(names(proj.l))
+```
+
+``` {r, echo=F, eval=T}
+srcwant0 <- lapply(proj.lvls, function(proj.num) {
+  knit_expand("scripts/WorkplanTemp.Lvl2.Rmd")
+  })
+```
+
+`r knit(text = unlist(srcwant0))`
+
+``` {r projs.subset.1, echo=F}
+statuswant1 <- c("ACTIVE", "QUEUED", "STALLED", "IDEA")
+priwant1 <- c("Top priority")
+urgencywant1 <- c("This quarter")
+
+projs.want1 <- projs.sm[projs.sm$ProjStatus %in% statuswant1 & projs.sm$Priority %in% priwant1 & projs.sm$ProjUrgency %in% urgencywant1,]
+projs.want1$ProjectName <- factor(projs.want1$ProjectName)
+```
+
+
+``` {r split.by.project.want1, echo=F}
+proj.l <- split(projs.want1, projs.want1$ProjectName)
+```
+
+``` {r create.proj.datasets1, echo=F, eval=T}
+proj.lvls <- 1:length(names(proj.l))
+```
+
+``` {r, echo=F, eval=T}
+srcwant1 <- lapply(proj.lvls, function(proj.num) {
+  knit_expand("scripts/WorkplanTemp.Lvl2.Rmd")
+  })
+```
+
+`r knit(text = unlist(srcwant1))`
+
+``` {r projs.subset.4, echo=F}
+statuswant4 <- c("ACTIVE", "QUEUED", "STALLED", "IDEA")
+priwant4 <- c("Top priority")
+urgencywant4 <- c("Ongoing")
+
+projs.want4 <- projs.sm[projs.sm$ProjStatus %in% statuswant4 & projs.sm$Priority %in% priwant4 & projs.sm$ProjUrgency %in% urgencywant4,]
+projs.want4$ProjectName <- factor(projs.want4$ProjectName)
+```
+
+
+``` {r split.by.project.want4, echo=F}
+proj.l <- split(projs.want4, projs.want4$ProjectName)
+```
+
+``` {r create.proj.datasets4, echo=F, eval=T}
+proj.lvls <- 1:length(names(proj.l))
+```
+
+``` {r, echo=F, eval=T}
+srcwant4 <- lapply(proj.lvls, function(proj.num) {
+  knit_expand("scripts/WorkplanTemp.Lvl2.Rmd")
+  })
+```
+
+`r knit(text = unlist(srcwant4))`
+
+
+``` {r projs.subset.2, echo=F}
+statuswant2 <- c("ACTIVE", "QUEUED", "STALLED", "IDEA")
+priwant2 <- c("Top priority")
+urgencywant2 <- c("Next quarter")
+
+projs.want2 <- projs.sm[projs.sm$ProjStatus %in% statuswant2 & projs.sm$Priority %in% priwant2 & projs.sm$ProjUrgency %in% urgencywant2,]
+projs.want2$ProjectName <- factor(projs.want2$ProjectName)
+```
+
+
+``` {r split.by.project.want2, echo=F}
+proj.l <- split(projs.want2, projs.want2$ProjectName)
+```
+
+``` {r create.proj.datasets2, echo=F, eval=T}
+proj.lvls <- 1:length(names(proj.l))
+```
+
+``` {r, echo=F, eval=T}
+srcwant2 <- lapply(proj.lvls, function(proj.num) {
+  knit_expand("scripts/WorkplanTemp.Lvl2.Rmd")
+  })
+```
+
+`r knit(text = unlist(srcwant2))`
+
+
+``` {r projs.subset.3, echo=F}
+statuswant3 <- c("ACTIVE", "QUEUED", "STALLED", "IDEA")
+priwant3 <- c("Top priority")
+urgencywant3 <- c("This year")
+
+projs.want3 <- projs.sm[projs.sm$ProjStatus %in% statuswant3 & projs.sm$Priority %in% priwant3 & projs.sm$ProjUrgency %in% urgencywant3,]
+projs.want3$ProjectName <- factor(projs.want3$ProjectName)
+```
+
+
+``` {r split.by.project.want3, echo=F}
+proj.l <- split(projs.want3, projs.want3$ProjectName)
+```
+
+``` {r create.proj.datasets3, echo=F, eval=T}
+proj.lvls <- 1:length(names(proj.l))
+```
+
+``` {r, echo=F, eval=T}
+srcwant3 <- lapply(proj.lvls, function(proj.num) {
+  knit_expand("scripts/WorkplanTemp.Lvl2.Rmd")
+  })
+```
+
+`r knit(text = unlist(srcwant3))`
